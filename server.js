@@ -1,11 +1,34 @@
-const express = require("express")
+require('dotenv').config();
 
-require("dotenv").config()
+const express = require ('express');
+const colors = require('colors');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const cors = require('cors');
+const allowedOrigins = require('./allowedOrigins/allowedOrigins');
+const connectDB = require('./db/ConnectDB');
 
-const app = express()
+connectDB();
 
-const PORT = process.env.PORT || 5000
+const app = express();
+app.enable('trust proxy');
 
-app.listen(PORT, () => {
-    console.log(`App is listening on Port ${PORT}`)
-})
+const port = 3001;
+
+
+app.use(cors(allowedOrigins));
+app.use(express.urlencoded({ extended: false}));
+app.use(helmet());
+app.use(morgan('tiny'));
+app.use(express.json());
+
+
+
+
+const start = () => {
+    console.log(`Server is up and running on port ${port}`.brightYellow.underline);
+}
+
+
+app.listen(port, start);
+
