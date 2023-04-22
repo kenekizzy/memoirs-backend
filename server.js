@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const allowedOrigins = require('./allowedOrigins/allowedOrigins');
 const connectDB = require('./db/ConnectDB');
+const userRoute = require("./routes/UserRoute")
 
 connectDB();
 
@@ -22,7 +23,7 @@ app.use(helmet());
 app.use(morgan('tiny'));
 app.use(express.json());
 
-
+app.use("/api/user", userRoute)
 
 
 const start = () => {
