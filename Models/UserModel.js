@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Password is required'],
         minlength: 8
     },
-    isAdmin: false, 
     reviews :{
         type: Number,
         min: 1,
