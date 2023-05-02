@@ -1,0 +1,29 @@
+POST http://localhost:3001/api/register
+Content-Type: application/json
+
+{
+    "fullName" : "Chibuikem Iroaganachi",
+    "email" : "ciro@gamil.com",
+    "userName" : "@Ikem",
+    "password" : "303030-@3"
+}
+
+###
+
+POST http://localhost:4000/api/login
+Content-Type: application/json
+
+{
+    "email" : "ciro@gamil.com",
+    "password" : "303030-@3"
+}
+
+
+###
+GET http://localhost:3001/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0NTA0NTg4MGUyMjJhNzJkZTU2NGZmYyIsImlhdCI6MTY4Mjk4MjI4NiwiZXhwIjoxNjgyOTgyODg2fQ.puV4cJSoUWGQWTz9satyOV28KXBEKigBv20nvD-RyDE
+Content-Type: application/json
+
+
+###
+GET http://localahost:4000/api/token
