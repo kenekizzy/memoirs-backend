@@ -1,49 +1,70 @@
-const User = require("../Models/UserModel")
-const bcrypt = require("bcryptjs")
-const jwtGenerator = require("../middleware/jwtGenerator")
+const asyncHandler = require("express-async-handler");
+const bcrypt = require('bcryptjs');
+const User = require('../Models/UserModel');
 
-//Register User
-const registerUser = async (req, res) => {
-    try {
-        const existingEmail = await User.findOne({email: req.body.email})
-        if(existingEmail){
-            return res.status(400).json("Email exists")
-        }else{
-            const saltRounds = 10;
-            const salt = await bcrypt.genSalt(saltRounds)
-            const hashedPassword = await bcrypt.hash(req.body.password, salt)
-            const newUser = new User({
-                fullName: req.body.fullName,
-                userName: req.body.userName,
-                email: req.body.email,
-                password: hashedPassword
-            })
-            const user = await newUser.save()
-            const token = jwtGenerator(user._id.toString())
-            return res.status(200).json({token})
-        }
-    } catch (error) {
-        res.status(500).json(error)   
+
+//@desc create user
+//@route POST /api/register
+//@access public
+
+const registerUser = asyncHandler(async(req,res) => {
+    const { fullName, userName, email, password } = req.body;
+    if(!fullName || !email || !userName || !password){
+        res.status(400);
+        throw new Error ("Fill in all fields");
     }
+
+    //Does user exist
+    const userNameExists = await User.findOne({userName});
+    if(userNameExists){
+        res.status(400).json({message : "Userame is already in use"});
+        throw new Error ('Cannot complete registration')
+    };
+
+    const emailExists = await User.findOne({email});
+    if(emailExists){
+        res.status(400).json({message : "Email is already in use"});
+        throw new Error ('Cannot complete registration')
+    }
+    //hash password
+    const salt = await bcrypt.genSalt(11);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await User.create({
+        fullName, 
+        userName,
+        email,
+        password : hashedPassword,
+    });
+    if(user){
+        res.status(201).json({
+            _id : user.id,
+            userName : userName,
+        });
+    }else{
+        res.status(400);
+        throw new Error('Invalid Credentials');
+    }
+
+});
+
+
+//@desc get user data
+//@route GET/api/users/me
+//@access private
+const getUser = asyncHandler(async(req, res) => {
+    const { _id, userName } = await User.findById(req.user.id);
+    res.status(200).json({
+        id : _id,
+        userName
+    })
+})
+
+
+
+
+
+module.exports={
+    registerUser,
+    getUser
 }
-
-//Login User
-const loginUser = async (req, res) => {
-    const existingUser = await User.findOne({email: req.body.email})
-    if(!existingUser){
-        return res.status(400).json("Invalid Email Address")
-    }
-    const passwordTrue = await bcrypt.compare(req.body.password, existingUser.password)
-    if(!passwordTrue){
-        return res.status(400).josn("Incorrect  Password")
-    }
-    try {
-        const { password, ...userInfo} = existingUser._doc
-        const token = jwtGenerator(userInfo._id.toString())
-        res.status(200).json({...userInfo, token})
-    } catch (error) {
-        res.status(500).json(error)
-    }
-}
-
-module.exports = { registerUser, loginUser }
